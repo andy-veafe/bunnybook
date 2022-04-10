@@ -21,12 +21,12 @@ class CommentService:
         return await self._repo.save_comment(new_comment=new_comment)
 
     async def find_comments_by_post_id(
-            self,
-            post_id: UUID,
-            older_than: Optional[dt.datetime] = None,
-            limit: Optional[int] = 10) -> List[Comment]:
+        self,
+        post_id: UUID,
+        older_than: Optional[dt.datetime] = None,
+        limit: Optional[int] = 10,
+    ) -> List[Comment]:
         """Find comments under specified post (paginated by creation date)."""
         return await self._repo.find_comments_by_post_id(
-            post_id=post_id,
-            older_than=older_than,
-            limit=limit)
+            post_id=post_id, older_than=older_than, limit=limit
+        )

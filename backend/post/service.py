@@ -15,10 +15,11 @@ from profiles.service import ProfilesService
 class PostService:
     @inject
     def __init__(
-            self,
-            repo: PostRepo,
-            profiles_service: ProfilesService,
-            notification_manager: NotificationManager):
+        self,
+        repo: PostRepo,
+        profiles_service: ProfilesService,
+        notification_manager: NotificationManager,
+    ):
         self._repo = repo
         self._profiles_service = profiles_service
         self._notification_manager = notification_manager
@@ -28,20 +29,23 @@ class PostService:
         return await self._repo.save_post(new_post=new_post)
 
     async def find_posts_by_wall_profile_id(
-            self,
-            wall_profile_id: UUID,
-            user: Optional[User],
-            older_than: Optional[dt.datetime] = None,
-            limit: Optional[int] = 10) -> List[Post]:
+        self,
+        wall_profile_id: UUID,
+        user: Optional[User],
+        older_than: Optional[dt.datetime] = None,
+        limit: Optional[int] = 10,
+    ) -> List[Post]:
         """Find posts by wall profile id (paginated by creation date)."""
         return await self._repo.find_posts_by_wall_profile_id(
             wall_profile_id=wall_profile_id,
-            include_friends=user and (
-                    user.id == wall_profile_id
-                    or await self._profiles_service.is_friend_with(
-                user.id, wall_profile_id)),
+            include_friends=user
+            and (
+                user.id == wall_profile_id
+                or await self._profiles_service.is_friend_with(user.id, wall_profile_id)
+            ),
             older_than=older_than,
-            limit=limit)
+            limit=limit,
+        )
 
     async def find_post_by_id(self, post_id: UUID) -> Optional[Post]:
         """Find a post by its id."""

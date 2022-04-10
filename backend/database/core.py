@@ -8,6 +8,7 @@ metadata = MetaData()
 
 # Database instance
 db = Database(
-    f"postgresql://{cfg.postgres_uri}",
+    f"postgresql+pg8000://{cfg.postgres_uri}",
     min_size=cfg.postgres_min_pool_size,
-    max_size=cfg.postgres_max_pool_size)
+    max_size=cfg.postgres_max_pool_size,
+)

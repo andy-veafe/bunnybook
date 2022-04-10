@@ -44,9 +44,8 @@ class NotificationManager:
         self._ws.subscribe_to_on_connect(self._on_ws_connect)
 
     def add_notification(
-            self,
-            notification: NewNotification,
-            recipients: Union[List[UUID], Set[UUID]]) -> None:
+        self, notification: NewNotification, recipients: Union[List[UUID], Set[UUID]]
+    ) -> None:
         """
         Create and send a new notification to recipients.
         Notifications dispatching is non-blocking and occurs asynchronously.
@@ -57,17 +56,19 @@ class NotificationManager:
         if not recipients:
             return
         try:
-            self._notification_queue.put_nowait(NotificationManager.QueueItem(
-                event=notification.event,
-                payload=notification.payload,
-                recipients=recipients))
+            self._notification_queue.put_nowait(
+                NotificationManager.QueueItem(
+                    event=notification.event,
+                    payload=notification.payload,
+                    recipients=recipients,
+                )
+            )
         except QueueFull:
             logger.error("Notification queue is full")
             pass
 
     async def _on_ws_connect(self, sid: str, user: User):
-        count = await self._service.count_unread_notifications_by_profile_id(
-            user.id)
+        count = await self._service.count_unread_notifications_by_profile_id(user.id)
         await self._ws.send("unread_notifications_count", count, to=sid)
 
     async def _listen_for_notifications(self):
@@ -79,11 +80,12 @@ class NotificationManager:
                         Notification(
                             profile_id=recipient,
                             data=NotificationData(
-                                event=notification.event,
-                                payload=notification.payload)))
+                                event=notification.event, payload=notification.payload
+                            ),
+                        )
+                    )
                     await self._ws.send(
-                        event="new_unread_notification",
-                        payload=1,
-                        to=recipient)
+                        event="new_unread_notification", payload=1, to=recipient
+                    )
                 except Exception as e:
                     logger.error("Notification creation failed")

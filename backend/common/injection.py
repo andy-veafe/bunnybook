@@ -18,11 +18,13 @@ def on(dependency_class: Type[T]) -> Callable[[], T]:
 
 class Cache(Redis):
     """Cache injection token with code completion for Redis instance."""
+
     pass
 
 
 class PubSubStore(Redis):
     """PubSubStore injection token with code completion for Redis instance."""
+
     pass
 
 
@@ -31,14 +33,10 @@ async def configure():
     cache, pubsub = RedisManager(cfg.cache_uri), RedisManager(cfg.pubsub_uri)
     await cache.start()
     await pubsub.start()
-    injector.binder.bind(Cache,
-                         to=cache.redis,
-                         scope=singleton)
-    injector.binder.bind(PubSubStore,
-                         to=pubsub.redis,
-                         scope=singleton)
-    injector.binder.bind(AsyncGraphDatabase,
-                         to=AsyncGraphDatabase(cfg.neo4j_uri,
-                                               cfg.neo4j_user,
-                                               cfg.neo4j_password),
-                         scope=singleton)
+    injector.binder.bind(Cache, to=cache.redis, scope=singleton)
+    injector.binder.bind(PubSubStore, to=pubsub.redis, scope=singleton)
+    injector.binder.bind(
+        AsyncGraphDatabase,
+        to=AsyncGraphDatabase(cfg.neo4j_uri, cfg.neo4j_user, cfg.neo4j_password),
+        scope=singleton,
+    )

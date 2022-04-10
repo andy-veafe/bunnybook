@@ -61,16 +61,19 @@ def extract_user_from_token(access_token: str, verify_exp: bool = True) -> User:
     :return: User object stored inside the jwt
     """
 
-    return User(**jwt.decode(
-        access_token,
-        key=cfg.jwt_secret,
-        algorithms=[cfg.jwt_algorithm],
-        options={"verify_exp": verify_exp})["user"])
+    return User(
+        **jwt.decode(
+            access_token,
+            key=cfg.jwt_secret,
+            algorithms=[cfg.jwt_algorithm],
+            options={"verify_exp": verify_exp},
+        )["user"]
+    )
 
 
 def decode_jwt_refresh_token(
-        encoded_refresh_token: str,
-        verify_exp: bool = True) -> Dict:
+    encoded_refresh_token: str, verify_exp: bool = True
+) -> Dict:
     """
     Decode an encoded refresh token, with optional expiration check.
 
@@ -83,7 +86,8 @@ def decode_jwt_refresh_token(
         encoded_refresh_token,
         key=cfg.jwt_secret,
         algorithms=[cfg.jwt_algorithm],
-        options={"verify_exp": verify_exp})
+        options={"verify_exp": verify_exp},
+    )
 
 
 def _check_and_extract_user(request: Request) -> User:
@@ -92,14 +96,18 @@ def _check_and_extract_user(request: Request) -> User:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     try:
         access_token = authorization_header.replace("Bearer ", "")
-        user = extract_user_from_token(access_token, )
+        user = extract_user_from_token(
+            access_token,
+        )
         if cfg.sentry_dsn:
-            sentry_sdk.set_user({
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "ip_address": request.client.host
-            })
+            sentry_sdk.set_user(
+                {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "ip_address": request.client.host,
+                }
+            )
         return user
     except jwt.exceptions.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)

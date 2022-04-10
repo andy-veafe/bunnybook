@@ -8,8 +8,16 @@ from injector import singleton
 from sqlalchemy import insert, select, delete, desc, update
 
 from chat.exceptions import NonExistentChatGroup
-from chat.models import ChatMessage, chat_message, chat_group, ChatGroup, \
-    profile_chat_group, chat_message_read_status, Conversation, PrivateChat
+from chat.models import (
+    ChatMessage,
+    chat_message,
+    chat_group,
+    ChatGroup,
+    profile_chat_group,
+    chat_message_read_status,
+    Conversation,
+    PrivateChat,
+)
 from common.injection import injector
 from database.core import db
 from database.utils import map_result
@@ -22,8 +30,9 @@ class ChatRepo:
         try:
             return await db.fetch_one(
                 insert(chat_message)
-                    .values(new_message.dict(exclude_none=True))
-                    .returning(chat_message))
+                .values(new_message.dict(exclude_none=True))
+                .returning(chat_message)
+            )
         except asyncpg.exceptions.ForeignKeyViolationError as e:
             if e.constraint_name == "chat_message_chat_group_id_fkey":
                 raise NonExistentChatGroup()
@@ -32,71 +41,88 @@ class ChatRepo:
     @map_result
     @db.transaction()
     async def save_chat_group(
-            self,
-            profile_ids: List[UUID],
-            group_name: Optional[str] = None,
-            private: bool = True) -> ChatGroup:
-        group = (await db.fetch_one(insert(chat_group).values(
-            ChatGroup(name=group_name, private=private).dict(exclude_none=True))
-                                    .returning(chat_group)))
+        self,
+        profile_ids: List[UUID],
+        group_name: Optional[str] = None,
+        private: bool = True,
+    ) -> ChatGroup:
+        group = await db.fetch_one(
+            insert(chat_group)
+            .values(ChatGroup(name=group_name, private=private).dict(exclude_none=True))
+            .returning(chat_group)
+        )
         await self.save_chat_group_members(profile_ids, group["id"], private)
         return group
 
     async def save_chat_group_members(
-            self,
-            profile_ids: List[UUID],
-            chat_group_id: UUID,
-            private: bool) -> None:
+        self, profile_ids: List[UUID], chat_group_id: UUID, private: bool
+    ) -> None:
         query = profile_chat_group.insert()
         if private:
             from profiles.repo import ProfilesRepo
+
             profiles_repo = injector.get(ProfilesRepo)
             username_first_profile_id = (
-                await profiles_repo.find_profile_by_id(profile_ids[0])).username
+                await profiles_repo.find_profile_by_id(profile_ids[0])
+            ).username
             username_second_profile_id = (
-                await profiles_repo.find_profile_by_id(profile_ids[1])).username
-            values = [dict(profile_id=profile_ids[0],
-                           chat_group_id=chat_group_id,
-                           name=username_second_profile_id),
-                      dict(profile_id=profile_ids[1],
-                           chat_group_id=chat_group_id,
-                           name=username_first_profile_id)]
+                await profiles_repo.find_profile_by_id(profile_ids[1])
+            ).username
+            values = [
+                dict(
+                    profile_id=profile_ids[0],
+                    chat_group_id=chat_group_id,
+                    name=username_second_profile_id,
+                ),
+                dict(
+                    profile_id=profile_ids[1],
+                    chat_group_id=chat_group_id,
+                    name=username_first_profile_id,
+                ),
+            ]
         else:
-            values = [dict(profile_id=profile_id, chat_group_id=chat_group_id)
-                      for profile_id in profile_ids]
+            values = [
+                dict(profile_id=profile_id, chat_group_id=chat_group_id)
+                for profile_id in profile_ids
+            ]
         await db.execute_many(query=query, values=values)
 
     async def update_chat_message_read_status(
-            self,
-            profile_id: UUID,
-            chat_group_id: UUID,
-            chat_message_id: UUID):
+        self, profile_id: UUID, chat_group_id: UUID, chat_message_id: UUID
+    ):
         return await db.fetch_one(
-            sqlalchemy.dialects.postgresql.insert(
-                chat_message_read_status).values(
+            sqlalchemy.dialects.postgresql.insert(chat_message_read_status)
+            .values(
                 profile_id=profile_id,
                 chat_group_id=chat_group_id,
                 chat_message_id=chat_message_id,
-                read_at=dt.datetime.now(dt.timezone.utc))
-                .on_conflict_do_update(
+                read_at=dt.datetime.now(dt.timezone.utc),
+            )
+            .on_conflict_do_update(
                 constraint="profile_id_chat_group_id_idx",
-                set_=dict(chat_message_id=chat_message_id,
-                          read_at=dt.datetime.now(dt.timezone.utc))))
+                set_=dict(
+                    chat_message_id=chat_message_id,
+                    read_at=dt.datetime.now(dt.timezone.utc),
+                ),
+            )
+        )
 
     @map_result
-    async def update_chat_group(self, chat_group_id: UUID, active: bool) \
-            -> ChatGroup:
-        return await db.fetch_one(update(chat_group)
-                                  .where(chat_group.c.id == chat_group_id)
-                                  .values(active=active)
-                                  .returning(chat_group))
+    async def update_chat_group(self, chat_group_id: UUID, active: bool) -> ChatGroup:
+        return await db.fetch_one(
+            update(chat_group)
+            .where(chat_group.c.id == chat_group_id)
+            .values(active=active)
+            .returning(chat_group)
+        )
 
     @map_result
     async def find_conversations_by_profile_id(
-            self,
-            profile_id: UUID,
-            older_than: Optional[dt.datetime] = None,
-            limit: int = 10) -> List[Conversation]:
+        self,
+        profile_id: UUID,
+        older_than: Optional[dt.datetime] = None,
+        limit: int = 10,
+    ) -> List[Conversation]:
         older_than = older_than or dt.datetime.now(dt.timezone.utc)
         query = """
         SELECT * FROM (
@@ -117,11 +143,12 @@ class ChatRepo:
         LIMIT :limit"""
         return await db.fetch_all(
             query=query,
-            values=dict(
-                profile_id=profile_id, older_than=older_than, limit=limit))
+            values=dict(profile_id=profile_id, older_than=older_than, limit=limit),
+        )
 
     async def find_unread_conversations_ids_by_profile_id(
-            self, profile_id: UUID) -> List[UUID]:
+        self, profile_id: UUID
+    ) -> List[UUID]:
         query = """SELECT chat_group_id FROM (
         SELECT chat_group_id, read_at FROM (
             SELECT DISTINCT ON (pcg.profile_id, pcg.chat_group_id) cmrs.read_at read_at, pcg.chat_group_id chat_group_id
@@ -135,14 +162,13 @@ class ChatRepo:
             ORDER BY pcg.profile_id, pcg.chat_group_id, cm.created_at DESC
             ) conversations
         WHERE read_at IS NULL) unread_conversations"""
-        results = await db.fetch_all(
-            query=query,
-            values=dict(profile_id=profile_id))
+        results = await db.fetch_all(query=query, values=dict(profile_id=profile_id))
         return [result["chat_group_id"] for result in results]
 
     @map_result
-    async def find_private_chats_by_profile_id(self, profile_id: UUID) \
-            -> List[PrivateChat]:
+    async def find_private_chats_by_profile_id(
+        self, profile_id: UUID
+    ) -> List[PrivateChat]:
         query = """SELECT cg.id chat_group_id, pcg2.profile_id, p.username
         FROM profile_chat_group pcg1
             JOIN profile_chat_group pcg2 ON pcg1.chat_group_id = pcg2.chat_group_id
@@ -152,28 +178,28 @@ class ChatRepo:
             AND pcg1.profile_id = :profile_id
             AND cg.private = TRUE
             AND cg.active = TRUE"""
-        return await db.fetch_all(
-            query=query,
-            values=dict(profile_id=profile_id))
+        return await db.fetch_all(query=query, values=dict(profile_id=profile_id))
 
-    async def find_chat_group_members_profile_ids(self, group_id: UUID) \
-            -> List[UUID]:
+    async def find_chat_group_members_profile_ids(self, group_id: UUID) -> List[UUID]:
         results = await db.fetch_all(
-            select([profile_chat_group.c.profile_id])
-                .where(profile_chat_group.c.chat_group_id == group_id))
+            select([profile_chat_group.c.profile_id]).where(
+                profile_chat_group.c.chat_group_id == group_id
+            )
+        )
         return [result["profile_id"] for result in results]
 
     @map_result
-    async def delete_chat_group(self, chat_group_id: UUID) \
-            -> Optional[ChatGroup]:
-        return await db.fetch_one(delete(chat_group)
-                                  .where(chat_group.c.id == chat_group_id)
-                                  .returning(chat_group))
+    async def delete_chat_group(self, chat_group_id: UUID) -> Optional[ChatGroup]:
+        return await db.fetch_one(
+            delete(chat_group)
+            .where(chat_group.c.id == chat_group_id)
+            .returning(chat_group)
+        )
 
     @map_result
     async def find_private_chat_group(
-            self, profile_id: UUID, other_profile_id: UUID) \
-            -> Optional[ChatGroup]:
+        self, profile_id: UUID, other_profile_id: UUID
+    ) -> Optional[ChatGroup]:
         query = """SELECT cg.id, cg.name, cg.private, cg.active
         FROM profile_chat_group pcg1
             JOIN profile_chat_group pcg2 ON pcg1.chat_group_id = pcg2.chat_group_id
@@ -183,19 +209,21 @@ class ChatRepo:
             AND cg.private = TRUE"""
         return await db.fetch_one(
             query=query,
-            values=dict(profile_id=profile_id,
-                        other_profile_id=other_profile_id))
+            values=dict(profile_id=profile_id, other_profile_id=other_profile_id),
+        )
 
     @map_result
     async def find_chat_group_messages(
-            self,
-            chat_group_id: UUID,
-            older_than: Optional[dt.datetime] = None,
-            limit: int = 10) -> List[ChatMessage]:
+        self,
+        chat_group_id: UUID,
+        older_than: Optional[dt.datetime] = None,
+        limit: int = 10,
+    ) -> List[ChatMessage]:
         older_than = older_than or dt.datetime.now(dt.timezone.utc)
         return await db.fetch_all(
             select([chat_message])
-                .where(chat_message.c.chat_group_id == chat_group_id)
-                .where(chat_message.c.created_at < older_than)
-                .order_by(desc(chat_message.c.created_at))
-                .limit(limit))
+            .where(chat_message.c.chat_group_id == chat_group_id)
+            .where(chat_message.c.created_at < older_than)
+            .order_by(desc(chat_message.c.created_at))
+            .limit(limit)
+        )

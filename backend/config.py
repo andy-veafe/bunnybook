@@ -29,6 +29,4 @@ class Settings(BaseSettings):
 
 
 cfg = Settings()
-sentry_config = dict(
-    dsn=cfg.sentry_dsn
-)
+sentry_config = dict(dsn=cfg.sentry_dsn)

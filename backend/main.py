@@ -56,32 +56,26 @@ web_router.include_router(notification_router, tags=["Notifications"])
 web_router.include_router(chat_router, tags=["Chat"])
 web_router.include_router(avatar_router, tags=["Avatar"])
 injector.get(AvatarService)
-app.mount(
-    "/web/avatars",
-    StaticFiles(directory=cfg.avatar_data_folder),
-    name="avatar")
+app.mount("/web/avatars", StaticFiles(directory=cfg.avatar_data_folder), name="avatar")
 app.include_router(web_router)
 
 
 # Add exception handlers
 @app.exception_handler(HTTPExceptionJSON)
-async def http_exception_handler(
-        request: Request,
-        exc: HTTPExceptionJSON):
+async def http_exception_handler(request: Request, exc: HTTPExceptionJSON):
     json_data = jsonable_encoder(exc.data)
     return JSONResponse(
         status_code=exc.status_code,
         headers=exc.headers,
-        content={"message": exc.detail, "code": exc.code, "error": json_data})
+        content={"message": exc.detail, "code": exc.code, "error": json_data},
+    )
 
 
 @app.exception_handler(UnexpectedRelationshipState)
-async def unicorn_exception_handler(
-        request: Request,
-        exc: UnexpectedRelationshipState):
+async def unicorn_exception_handler(request: Request, exc: UnexpectedRelationshipState):
     return JSONResponse(
-        status_code=400,
-        content={"message": "UnexpectedRelationshipState"})
+        status_code=400, content={"message": "UnexpectedRelationshipState"}
+    )
 
 
 # Startup event handler

@@ -18,9 +18,7 @@ class RedisManager:
     async def start(self):
         """Establish connection with Redis."""
         try:
-            self._redis = await aioredis.create_redis(
-                self._redis_uri,
-                encoding="utf-8")
+            self._redis = await aioredis.create_redis(self._redis_uri, encoding="utf-8")
         except Exception as e:
             raise Exception("Couldn't connect to Redis", e)
 

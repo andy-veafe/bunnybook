@@ -16,21 +16,31 @@ class PostPrivacy(str, enum.Enum):
 
 
 post = Table(
-    "post", metadata,
+    "post",
+    metadata,
     uuid_pk(),
     Column("content", String),
     created_at(index=True),
     updated_at(),
-    Column("wall_profile_id", PgUUID,
-           ForeignKey("profile.id", ondelete="CASCADE"),
-           nullable=False),
-    Column("profile_id", PgUUID,
-           ForeignKey("profile.id", ondelete="CASCADE"),
-           nullable=False),
-    Column("privacy", Enum(PostPrivacy), nullable=False,
-           server_default=f"{PostPrivacy.PUBLIC.value}"),
-    Column("comments_count", Integer, nullable=False,
-           server_default="0"),
+    Column(
+        "wall_profile_id",
+        PgUUID,
+        ForeignKey("profile.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column(
+        "profile_id",
+        PgUUID,
+        ForeignKey("profile.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column(
+        "privacy",
+        Enum(PostPrivacy),
+        nullable=False,
+        server_default=f"{PostPrivacy.PUBLIC.value}",
+    ),
+    Column("comments_count", Integer, nullable=False, server_default="0"),
 )
 
 
@@ -44,4 +54,3 @@ class Post(BaseModel):
     username: Optional[str]
     privacy: PostPrivacy
     comments_count: int = 0
-

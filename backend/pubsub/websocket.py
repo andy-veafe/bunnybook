@@ -32,6 +32,7 @@ class WsRouter(ABC):
 
 class SioSession(BaseModel):
     """Socket.IO sid session object."""
+
     user: User
     private_chats: List[PrivateChat]
 
@@ -49,14 +50,13 @@ async def save_sio_session(sid: str, session: SioSession) -> None:
 @singleton
 class WebSockets(WsRouter):
     @inject
-    def __init__(
-            self,
-            store: WebSocketsStore):
+    def __init__(self, store: WebSocketsStore):
         self._sio = socketio.AsyncServer(
             async_mode="asgi",
             cors_allowed_origins="*",
             client_manager=AsyncRedisManager(cfg.pubsub_uri),
-            allow_upgrades=True)
+            allow_upgrades=True,
+        )
         self._store = store
         self._on_connect_listeners: List[OnConnectCallback] = []
         self.include_ws_router(self)
@@ -66,8 +66,7 @@ class WebSockets(WsRouter):
         socketio_asgi_app = socketio.ASGIApp(self._sio, app)
         app.mount(path, socketio_asgi_app)
 
-    async def send(self, event: str, payload: Any, to: Union[str, UUID]) \
-            -> None:
+    async def send(self, event: str, payload: Any, to: Union[str, UUID]) -> None:
         """
         Send a message via websocket to specified room or sid.
 
@@ -75,9 +74,7 @@ class WebSockets(WsRouter):
         :param payload: Socket.IO message payload
         :param to: room id or sid
         """
-        await self._sio.emit(event,
-                             jsonable_encoder(payload),
-                             room=str(to))
+        await self._sio.emit(event, jsonable_encoder(payload), room=str(to))
 
     def subscribe_to_on_connect(self, callback: OnConnectCallback):
         """Link a callback to the 'on_connect' Socket.IO event."""
@@ -107,8 +104,9 @@ class WebSockets(WsRouter):
 
     async def _notify_on_connect_listeners(self, sid: str, user: User):
         for listener in self._on_connect_listeners:
-            await listener(sid, user) if asyncio.iscoroutinefunction(listener) \
-                else listener(sid, user)
+            await listener(sid, user) if asyncio.iscoroutinefunction(
+                listener
+            ) else listener(sid, user)
 
     async def _on_connect(self, sid: str, environ: Dict, auth: Dict):
         # WebSocket authentication method: check access token signature only and
@@ -120,8 +118,7 @@ class WebSockets(WsRouter):
             user = extract_user_from_token(token, verify_exp=False)
             cookie = SimpleCookie()
             cookie.load(environ["HTTP_COOKIE"])
-            decode_jwt_refresh_token(cookie["refresh_token"].value,
-                                     verify_exp=True)
+            decode_jwt_refresh_token(cookie["refresh_token"].value, verify_exp=True)
         except Exception as e:
             return False
         self._sio.enter_room(sid=sid, room=str(user.id))

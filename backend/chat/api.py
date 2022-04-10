@@ -24,33 +24,40 @@ class ChatApi:
     @chat_router.get(
         "/chat/{chat_group_id}/messages",
         response_model=List[ChatMessageRead],
-        dependencies=[Depends(RateLimitTo(times=10, seconds=1))])
+        dependencies=[Depends(RateLimitTo(times=10, seconds=1))],
+    )
     async def get_messages(
-            self,
-            chat_group_id: UUID,
-            older_than: Optional[dt.datetime] = Query(None),
-            limit: Optional[int] = Query(20, ge=1, le=20),
-            user: User = Depends(get_user)):
+        self,
+        chat_group_id: UUID,
+        older_than: Optional[dt.datetime] = Query(None),
+        limit: Optional[int] = Query(20, ge=1, le=20),
+        user: User = Depends(get_user),
+    ):
         """Get messages belonging to a specific chat group."""
         if user.id not in await self._service.get_chat_group_members_profile_ids(
-                chat_group_id):
+            chat_group_id
+        ):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
         return await self._service.get_conversation_messages(
-            chat_group_id, older_than=older_than, limit=limit)
+            chat_group_id, older_than=older_than, limit=limit
+        )
 
     @chat_router.get(
         "/profiles/{profile_id}/conversations",
         response_model=List[ConversationRead],
-        dependencies=[Depends(RateLimitTo(times=5, seconds=1))])
+        dependencies=[Depends(RateLimitTo(times=5, seconds=1))],
+    )
     async def get_conversations(
-            self,
-            profile_id: UUID,
-            older_than: Optional[dt.datetime] = Query(None),
-            limit: Optional[int] = Query(10, ge=1, le=20),
-            user: User = Depends(get_user)):
+        self,
+        profile_id: UUID,
+        older_than: Optional[dt.datetime] = Query(None),
+        limit: Optional[int] = Query(10, ge=1, le=20),
+        user: User = Depends(get_user),
+    ):
         """Return list of conversations with at least one message in which a
         specific profile is involved."""
         if user.id != profile_id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
         return await self._service.get_conversations(
-            profile_id, older_than=older_than, limit=limit)
+            profile_id, older_than=older_than, limit=limit
+        )

@@ -4,8 +4,17 @@ from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import Column, DateTime, String, Table, ForeignKey, Boolean, \
-    Enum, Index, func
+from sqlalchemy import (
+    Column,
+    DateTime,
+    String,
+    Table,
+    ForeignKey,
+    Boolean,
+    Enum,
+    Index,
+    func,
+)
 
 from database.core import metadata
 from database.utils import uuid_pk, PgUUID
@@ -17,29 +26,35 @@ class Role(str, enum.Enum):
 
 
 profile = Table(
-    "profile", metadata,
+    "profile",
+    metadata,
     uuid_pk(),
     Column("username", String, unique=True, nullable=False),
     Column("email", String, unique=True, nullable=False),
-    Column("registered_at", DateTime(timezone=True),
-           server_default=func.now()),
+    Column("registered_at", DateTime(timezone=True), server_default=func.now()),
     Column("last_login_at", DateTime(timezone=True)),
     Column("password", String, nullable=False),
-    Column("role", Enum(Role), nullable=False,
-           server_default=f"{Role.USER.value}"),
-    Index("username_idx",
-          "username", postgresql_using='gin',
-          postgresql_ops={
-              "username": 'gin_trgm_ops',
-          })
+    Column("role", Enum(Role), nullable=False, server_default=f"{Role.USER.value}"),
+    Index(
+        "username_idx",
+        "username",
+        postgresql_using="gin",
+        postgresql_ops={
+            "username": "gin_trgm_ops",
+        },
+    ),
 )
 
 jwt_refresh_token = Table(
-    "jwt_refresh_token", metadata,
+    "jwt_refresh_token",
+    metadata,
     uuid_pk(),
-    Column("profile_id", PgUUID,
-           ForeignKey("profile.id", ondelete="CASCADE"),
-           nullable=False),
+    Column(
+        "profile_id",
+        PgUUID,
+        ForeignKey("profile.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
     Column("issued_at", DateTime(timezone=True), nullable=False),
     Column("expires_at", DateTime(timezone=True), nullable=False),
     Column("invalidated_at", DateTime(timezone=True)),

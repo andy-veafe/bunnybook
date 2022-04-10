@@ -9,15 +9,20 @@ from database.core import metadata
 from database.utils import uuid_pk, created_at, PgUUID
 
 comment = Table(
-    "comment", metadata,
+    "comment",
+    metadata,
     uuid_pk(),
     Column("content", String),
     created_at(index=True),
-    Column("post_id", PgUUID, ForeignKey("post.id", ondelete="CASCADE"),
-           nullable=False),
-    Column("profile_id", PgUUID,
-           ForeignKey("profile.id", ondelete="CASCADE"),
-           nullable=False),
+    Column(
+        "post_id", PgUUID, ForeignKey("post.id", ondelete="CASCADE"), nullable=False
+    ),
+    Column(
+        "profile_id",
+        PgUUID,
+        ForeignKey("profile.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
 )
 
 

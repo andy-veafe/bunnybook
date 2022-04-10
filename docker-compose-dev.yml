@@ -18,7 +18,7 @@ services:
     volumes:
       - ./_data-dev/postgres-data:/var/lib/postgresql/data
   graph:
-    image: "neo4j:4.3.2-community"
+    image: neo4j
     ports:
       - "7474:7474"
       - "7687:7687"

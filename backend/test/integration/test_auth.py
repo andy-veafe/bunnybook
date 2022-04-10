@@ -18,10 +18,12 @@ async def test_register():
 @pytest.mark.asyncio
 async def test_register_conflicts():
     user, password = await register_random_user()
-    assert (await register_user(
-        "different_username", user["email"], password)).status_code == 409
-    assert (await register_user(
-        user["username"], "different@email.com", password)).status_code == 409
+    assert (
+        await register_user("different_username", user["email"], password)
+    ).status_code == 409
+    assert (
+        await register_user(user["username"], "different@email.com", password)
+    ).status_code == 409
 
 
 @pytest.mark.asyncio

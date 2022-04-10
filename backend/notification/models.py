@@ -10,15 +10,19 @@ from database.core import metadata
 from database.utils import uuid_pk, created_at, PgUUID
 
 notification = Table(
-    "notification", metadata,
+    "notification",
+    metadata,
     uuid_pk(),
     created_at(index=True),
-    Column("profile_id", PgUUID,
-           ForeignKey("profile.id", ondelete="CASCADE"),
-           nullable=False),
+    Column(
+        "profile_id",
+        PgUUID,
+        ForeignKey("profile.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
     Column("data", JSON, nullable=False),
     Column("read", Boolean, server_default="false"),
-    Column("visited", Boolean, server_default="false")
+    Column("visited", Boolean, server_default="false"),
 )
 
 

@@ -8,9 +8,8 @@ from common.schemas import BaseSchema
 
 class ProfileCreate(BaseSchema):
     username: str = Field(
-        min_length=2,
-        max_length=32,
-        regex="^[a-zA-Z0-9]+([-_.][a-zA-Z0-9]+)*$")
+        min_length=2, max_length=32, regex="^[a-zA-Z0-9]+([-_.][a-zA-Z0-9]+)*$"
+    )
     email: EmailStr
     password: str = Field(min_length=8, max_length=64)
     avatar_identifier: str = str(uuid4())

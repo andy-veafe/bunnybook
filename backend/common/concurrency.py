@@ -14,5 +14,4 @@ async def cpu_bound_task(func: Callable, *args):
     :param args: async function parameters
     :return: async function result
     """
-    return await asyncio.get_event_loop().run_in_executor(
-        _executor, func, *args)
+    return await asyncio.get_event_loop().run_in_executor(_executor, func, *args)

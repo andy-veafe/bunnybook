@@ -17,8 +17,8 @@ class AvatarApi:
     _service: AvatarService = Depends(on(AvatarService))
 
     @avatar_router.get(
-        "/avatar/{identifier}",
-        dependencies=[Depends(RateLimitTo(times=5, seconds=1))])
+        "/avatar/{identifier}", dependencies=[Depends(RateLimitTo(times=5, seconds=1))]
+    )
     async def get_random_avatar(self, identifier: str):
         """Get a random generated avatar, using identifier as seed."""
         random_avatar = await self._service.generate_avatar(identifier)

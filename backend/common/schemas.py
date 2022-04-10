@@ -11,6 +11,4 @@ def dt_to_iso8601z(d: dt.datetime) -> str:
 class BaseSchema(CamelModel):
     # add Zulu timezone to allow javascript correctly parsing UTC timestamps
     class Config:
-        json_encoders = {
-            dt.datetime: dt_to_iso8601z
-        }
+        json_encoders = {dt.datetime: dt_to_iso8601z}
