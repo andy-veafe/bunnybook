@@ -25,8 +25,6 @@ class Settings(BaseSettings):
     jwt_expiration_seconds: int = timedelta(minutes=15).total_seconds()
     jwt_refresh_expiration_seconds: int = timedelta(weeks=2).total_seconds()
 
-    sentry_dsn: Optional[str] = None
 
 
 cfg = Settings()
-sentry_config = dict(dsn=cfg.sentry_dsn)

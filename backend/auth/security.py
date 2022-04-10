@@ -1,7 +1,6 @@
 from typing import Optional, Dict
 
 import jwt
-import sentry_sdk
 from fastapi import HTTPException
 from starlette import status
 from starlette.requests import Request
@@ -99,15 +98,6 @@ def _check_and_extract_user(request: Request) -> User:
         user = extract_user_from_token(
             access_token,
         )
-        if cfg.sentry_dsn:
-            sentry_sdk.set_user(
-                {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "ip_address": request.client.host,
-                }
-            )
         return user
     except jwt.exceptions.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)

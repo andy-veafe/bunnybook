@@ -1,10 +1,8 @@
-import sentry_sdk
 import uvicorn
 from fastapi import APIRouter
 from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
 from fastapi_limiter import FastAPILimiter
-from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -19,7 +17,7 @@ from comment.api import comment_router
 from common import injection
 from common.exceptions import HTTPExceptionJSON
 from common.injection import injector, Cache
-from config import sentry_config, cfg
+from config import cfg
 from database.core import db
 from notification.api import notification_router
 from notification.manager import NotificationManager
@@ -28,15 +26,10 @@ from profiles.api import profiles_router
 from profiles.exceptions import UnexpectedRelationshipState
 from pubsub.websocket import WebSockets
 
-# Init FastAPI app
+# 初始化 FastAPI APP
 app = FastAPI()
 
-# Add middlewares
-if cfg.sentry_dsn:
-    sentry_sdk.init(**sentry_config)
-    asgi_app = SentryAsgiMiddleware(app)
-
-# CORS
+# 添加 CORS 中间件
 if not cfg.prod:
     app.add_middleware(
         CORSMiddleware,
@@ -46,7 +39,7 @@ if not cfg.prod:
         allow_headers=["*"],
     )
 
-# Add routers
+# 添加路由
 web_router = APIRouter(prefix="/web")
 web_router.include_router(auth_router, tags=["Auth"])
 web_router.include_router(post_router, tags=["Posts"])
@@ -60,7 +53,7 @@ app.mount("/web/avatars", StaticFiles(directory=cfg.avatar_data_folder), name="a
 app.include_router(web_router)
 
 
-# Add exception handlers
+# 添加异常处理
 @app.exception_handler(HTTPExceptionJSON)
 async def http_exception_handler(request: Request, exc: HTTPExceptionJSON):
     json_data = jsonable_encoder(exc.data)
@@ -78,27 +71,33 @@ async def unicorn_exception_handler(request: Request, exc: UnexpectedRelationshi
     )
 
 
-# Startup event handler
+# FastAPI 启动事件处理
 @app.on_event("startup")
 async def startup():
-    # Init dependency injection graph and services
+
+    # 初始化依赖注入图数据和多项服务
     await injection.configure()
-    # Init API rate limiter
+
+    # 初始化接口限流器
     await FastAPILimiter.init(injector.get(Cache))
-    # Add Socket.IO routers
+
+    # 添加 Socket.IO 路由
     ws = injector.get(WebSockets)
     ws.include_ws_router(injector.get(ChatService))
     ws.include_socketio(app, path="/ws")
     injector.get(NotificationManager).start()
     injector.get(ChatService).subscribe_to_on_connect()
     injector.get(NotificationManager).subscribe_to_on_connect()
-    # Connect to database
+
+    # 连接到数据库
     await db.connect()
 
 
-# Shutdown event handler
+# FastAPI 结束事件处理
 @app.on_event("shutdown")
 async def shutdown():
+
+    # 关闭数据库连接
     await db.disconnect()
 
 
