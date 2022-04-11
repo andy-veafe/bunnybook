@@ -33,7 +33,7 @@ app = FastAPI()
 if not cfg.prod:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000"],
+        allow_origins=["*", "http://localhost:3000"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -102,4 +102,8 @@ async def shutdown():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, log_level=cfg.fastapi_log_level)
+    uvicorn.run(
+        "main:app",
+        log_level=cfg.fastapi_log_level,
+        reload=cfg.fastapi_reload,
+    )

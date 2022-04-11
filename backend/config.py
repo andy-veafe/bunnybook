@@ -5,8 +5,12 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
+    class Config:
+        env_file = ".env"
+
     prod: bool = False
     fastapi_log_level: str = "info"
+    fastapi_reload: bool = False
     avatar_data_folder: str = "_data-dev/avatar-data"
 
     postgres_uri: str = "bunny:bunny@localhost:5432/bunnybook"
@@ -24,7 +28,6 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expiration_seconds: int = timedelta(minutes=15).total_seconds()
     jwt_refresh_expiration_seconds: int = timedelta(weeks=2).total_seconds()
-
 
 
 cfg = Settings()
