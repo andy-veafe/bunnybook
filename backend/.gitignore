@@ -2,3 +2,4 @@ venv/
 *.pyc
 .coverage
 test__*.py
+poetry.lock
