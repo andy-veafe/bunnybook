@@ -7,7 +7,7 @@ from typing import Any, List
 from PIL import Image
 from injector import singleton, inject
 
-from common.concurrency import cpu_bound_task
+from common.concurrency import run_in_executor
 from config import cfg
 
 
@@ -23,10 +23,10 @@ class AvatarService:
         self._hats = self._get_layers_paths("hats")
 
     async def generate_and_save_avatar(self, identifier: str, filename: str) -> None:
-        await cpu_bound_task(self._generate_and_save_avatar, identifier, filename)
+        await run_in_executor(self._generate_and_save_avatar, identifier, filename)
 
     async def generate_avatar(self, identifier: str) -> Any:
-        return await cpu_bound_task(self._generate_avatar, identifier)
+        return await run_in_executor(self._generate_avatar, identifier)
 
     def _generate_and_save_avatar(self, identifier: str, filename: str) -> None:
         avatar_image = self._generate_avatar(identifier)

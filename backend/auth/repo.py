@@ -8,7 +8,7 @@ from sqlalchemy import insert, select, update
 
 from auth.exceptions import EmailAlreadyTaken, UsernameAlreadyTaken
 from auth.models import profile, Profile, JwtRefreshToken, jwt_refresh_token
-from common.concurrency import cpu_bound_task
+from common.concurrency import run_in_executor
 from database.core import db
 from database.graph import AsyncGraphDatabase
 from database.utils import map_result
@@ -24,7 +24,7 @@ class AuthRepo:
     @db.transaction()
     async def save_profile(self, new_profile: Profile) -> Profile:
         new_profile.password = (
-            await cpu_bound_task(
+            await run_in_executor(
                 bcrypt.hashpw, new_profile.password.encode(), bcrypt.gensalt()
             )
         ).decode()

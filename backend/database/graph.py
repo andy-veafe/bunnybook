@@ -2,7 +2,7 @@ from typing import Callable
 
 from neo4j import GraphDatabase as Neo4JGraphDb
 
-from common.concurrency import cpu_bound_task
+from common.concurrency import run_in_executor
 
 
 class AsyncGraphDatabase:
@@ -23,7 +23,7 @@ class AsyncGraphDatabase:
             with self._driver.session() as session:
                 return session.write_transaction(tx_func)
 
-        return await cpu_bound_task(write_transaction)
+        return await run_in_executor(write_transaction)
 
     async def read_tx(self, tx_func: Callable):
         """Async wrapper over Neo4j 'read_transaction' method."""
@@ -32,4 +32,4 @@ class AsyncGraphDatabase:
             with self._driver.session() as session:
                 return session.read_transaction(tx_func)
 
-        return await cpu_bound_task(read_transaction)
+        return await run_in_executor(read_transaction)

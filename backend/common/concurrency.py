@@ -5,7 +5,7 @@ from typing import Callable
 _executor = ThreadPoolExecutor()
 
 
-async def cpu_bound_task(func: Callable, *args):
+async def run_in_executor(func: Callable, *args):
     """
     Execute async function in a separate thread, without blocking the main event
     loop.

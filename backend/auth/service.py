@@ -24,7 +24,7 @@ from auth.models import (
 )
 from auth.repo import AuthRepo
 from auth.security import decode_jwt_refresh_token
-from common.concurrency import cpu_bound_task
+from common.concurrency import run_in_executor
 from config import cfg
 from database.core import db
 
@@ -114,7 +114,7 @@ class AuthService:
         )
 
     async def _check_password(self, password: str, password_hash: str) -> bool:
-        return await cpu_bound_task(
+        return await run_in_executor(
             bcrypt.checkpw, password.encode(), password_hash.encode()
         )
 
