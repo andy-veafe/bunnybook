@@ -3,3 +3,4 @@ venv/
 .coverage
 test__*.py
 poetry.lock
+temp/

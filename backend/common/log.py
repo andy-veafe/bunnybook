@@ -1,14 +1,10 @@
-import logging
-import sys
+from loguru import logger
 
 __all__ = "logger"
 
-logger = logging.getLogger("bunnybook")
-logger.setLevel(logging.INFO)
-
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter(
-    "%(levelname)s: %(asctime)s (file: %(filename)s, line: %(lineno)d, func: %(funcName)s) - %(message)s"
+logger.add(
+    "./temp/logs/root.log",
+    rotation="1 hour",
+    retention="10 days",
+    encoding="utf-8",
 )
-handler.setFormatter(formatter)
-logger.addHandler(handler)
