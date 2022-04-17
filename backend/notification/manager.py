@@ -14,7 +14,7 @@ from pubsub.websocket import WebSockets
 
 
 class NewNotification:
-    """Base notification class; custom notification classes should extend it."""
+    """通知的基础类，包含事件和数据，其他的通知需要继承这个类"""
 
     def __init__(self, event: str, payload: Dict):
         self.event = event
@@ -33,7 +33,7 @@ class NotificationManager:
     def __init__(self, ws: WebSockets, service: NotificationService):
         self._ws = ws
         self._service = service
-        # must postpone Queue creation to FastAPI startup event
+        # 必须在FastAPI启动后，才能能创建消息队列
         self._notification_queue = None
 
     def start(self):
@@ -47,11 +47,9 @@ class NotificationManager:
         self, notification: NewNotification, recipients: Union[List[UUID], Set[UUID]]
     ) -> None:
         """
-        Create and send a new notification to recipients.
-        Notifications dispatching is non-blocking and occurs asynchronously.
-
-        :param notification: notification to be sent
-        :param recipients: profiles that will receive the notification
+        创建并发送新通知给指定的接收者，通知调度是非阻塞的，可以在任意时刻发送通知。
+        notification: 要发送的通知
+        recipients: 要接受新的的人员
         """
         if not recipients:
             return
@@ -64,7 +62,7 @@ class NotificationManager:
                 )
             )
         except QueueFull:
-            logger.error("Notification queue is full")
+            logger.error("通知队列已满，通知将被丢弃")
             pass
 
     async def _on_ws_connect(self, sid: str, user: User):
@@ -72,6 +70,7 @@ class NotificationManager:
         await self._ws.send("unread_notifications_count", count, to=sid)
 
     async def _listen_for_notifications(self):
+        """监听通知"""
         while True:
             notification = await self._notification_queue.get()
             for recipient in notification.recipients:
@@ -88,4 +87,4 @@ class NotificationManager:
                         event="new_unread_notification", payload=1, to=recipient
                     )
                 except Exception as e:
-                    logger.error("Notification creation failed")
+                    logger.error("通知发送失败：%s", e)

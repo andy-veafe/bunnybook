@@ -40,7 +40,7 @@ class AuthApi:
     async def register(
         self, profile_in: ProfileCreate, background_tasks: BackgroundTasks
     ):
-        """Register a new user."""
+        """新用户注册"""
         try:
             profile = await self._service.register(
                 Profile(**profile_in.dict(exclude={"avatar_identifier"}))

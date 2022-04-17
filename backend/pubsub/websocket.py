@@ -31,7 +31,7 @@ class WsRouter(ABC):
 
 
 class SioSession(BaseModel):
-    """Socket.IO sid session object."""
+    """Socket.IO SID 会话对象"""
 
     user: User
     private_chats: List[PrivateChat]
@@ -62,17 +62,18 @@ class WebSockets(WsRouter):
         self.include_ws_router(self)
 
     def include_socketio(self, app, path: str = "/"):
-        """Mount Socket.IO on a FastAPI app at specified path."""
+        """在FastAPI应用中挂载Socket.IO服务，并指定路径。"""
+
         socketio_asgi_app = socketio.ASGIApp(self._sio, app)
         app.mount(path, socketio_asgi_app)
 
     async def send(self, event: str, payload: Any, to: Union[str, UUID]) -> None:
         """
-        Send a message via websocket to specified room or sid.
+        通过WebSocket发送消息，支持群发（room）和单发（sid）。
 
-        :param event: Socket.IO message event
-        :param payload: Socket.IO message payload
-        :param to: room id or sid
+        event: Socket.IO 消息时间
+        payload: Socket.IO 消息内容负载
+        to: 房间ID或者会话ID
         """
         await self._sio.emit(event, jsonable_encoder(payload), room=str(to))
 
@@ -86,7 +87,7 @@ class WebSockets(WsRouter):
 
     @property
     def sio(self) -> socketio.AsyncServer:
-        """Return the Socket.IO instance."""
+        """返回 Socket.IO 实例"""
         return self._sio
 
     @property

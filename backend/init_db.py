@@ -1,5 +1,5 @@
 import alembic.config
-from neo4j import GraphDatabase
+from neo4j import GraphDatabase, Neo4jDriver
 
 from config import cfg
 
@@ -11,7 +11,7 @@ def init_rdbms():
 
 def init_graph():
     """Create graph db constraints."""
-    driver = GraphDatabase.driver(
+    driver: Neo4jDriver = GraphDatabase.driver(
         cfg.neo4j_uri, auth=(cfg.neo4j_user, cfg.neo4j_password)
     )
     with driver.session() as session:

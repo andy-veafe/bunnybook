@@ -1,17 +1,17 @@
 class ExpiredJwtToken(Exception):
-    pass
+    """JWT token过期"""
 
 
 class ExpiredJwtRefreshToken(Exception):
-    pass
+    """刷新JWT token过期"""
 
 
 class InvalidatedJwtRefreshToken(Exception):
-    pass
+    """刷新JWT token无效"""
 
 
 class LoginFailed(Exception):
-    pass
+    """登录失败"""
 
 
 class EmailAlreadyTaken(Exception):
