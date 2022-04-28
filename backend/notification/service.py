@@ -15,7 +15,7 @@ class NotificationService:
         self._repo = repo
 
     async def create_notification(self, new_notification: Notification) -> Notification:
-        """Save a new notification."""
+        """保存一个新通知。"""
         return await self._repo.save_notification(new_notification)
 
     async def find_notifications_by_profile_id(
@@ -24,13 +24,13 @@ class NotificationService:
         older_than: Optional[dt.datetime] = None,
         limit: Optional[int] = 10,
     ) -> List[Notification]:
-        """Find notifications by profile id (paginated by creation date)."""
+        """返回与用户相关的通知（按时间排序和分页）。"""
         return await self._repo.find_notifications_by_profile_id(
             profile_id=profile_id, older_than=older_than, limit=limit
         )
 
     async def count_unread_notifications_by_profile_id(self, profile_id: UUID) -> int:
-        """Count unread notifications by profile id."""
+        """统计未读的通知数量"""
         return await self._repo.count_unread_notifications_by_profile_id(profile_id)
 
     async def mark_notifications_as(

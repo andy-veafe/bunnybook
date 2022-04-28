@@ -17,7 +17,7 @@ class WebSocketsStore:
         self._store = store
 
     async def renew_online_status(self, profile_id: Union[str, UUID]):
-        """Refresh online status for profile_id."""
+        """刷新用户的在线状态。"""
         await self._store.set(
             f"websockets:{profile_id}",
             dt_to_iso8601z(dt.datetime.now(dt.timezone.utc)),
@@ -27,7 +27,7 @@ class WebSocketsStore:
     async def get_online_statuses(
         self, profile_ids: List[Union[str, UUID]]
     ) -> List[str]:
-        """Return list of online profile ids."""
+        """返回在线的用户ID列表。"""
         if not profile_ids:
             return []
         result = await self._store.mget(

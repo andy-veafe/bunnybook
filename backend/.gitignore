@@ -4,3 +4,4 @@ venv/
 test__*.py
 poetry.lock
 temp/
+test.py

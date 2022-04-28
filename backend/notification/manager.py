@@ -17,8 +17,8 @@ class NewNotification:
     """通知的基础类，包含事件和数据，其他的通知需要继承这个类"""
 
     def __init__(self, event: str, payload: Dict):
-        self.event = event
-        self.payload = jsonable_encoder(payload)
+        self.event = event  # 通知的事件
+        self.payload = jsonable_encoder(payload)  # 通知的数据
 
 
 @singleton

@@ -1,6 +1,6 @@
 from typing import Callable
 
-from neo4j import GraphDatabase as Neo4JGraphDb
+from neo4j import GraphDatabase as Neo4JGraphDb, Neo4jDriver
 
 from common.concurrency import run_in_executor
 
@@ -14,7 +14,7 @@ class AsyncGraphDatabase:
     performance."""
 
     def __init__(self, uri: str, user: str, password: str):
-        self._driver = Neo4JGraphDb.driver(uri, auth=(user, password))
+        self._driver: Neo4jDriver = Neo4JGraphDb.driver(uri, auth=(user, password))
 
     async def write_tx(self, tx_func: Callable):
         """Async wrapper over Neo4j 'write_transaction' method."""
