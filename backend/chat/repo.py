@@ -4,7 +4,7 @@ from uuid import UUID
 
 import asyncpg
 import sqlalchemy
-from injector import singleton
+from common.injector import singleton
 from sqlalchemy import insert, select, delete, desc, update
 
 from chat.exceptions import NonExistentChatGroup

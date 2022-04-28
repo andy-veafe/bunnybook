@@ -4,7 +4,7 @@ from http.cookies import SimpleCookie
 from typing import Any, Callable, Coroutine, Dict, List, Union
 from uuid import UUID
 
-import injector
+import common.injector as injector
 import socketio
 from auth.models import User
 from auth.security import decode_jwt_refresh_token, extract_user_from_token
@@ -12,7 +12,7 @@ from chat.models import PrivateChat
 from common.injection import injector
 from config import cfg
 from fastapi.encoders import jsonable_encoder
-from injector import inject, singleton
+from common.injector import inject, singleton
 from pydantic import BaseModel
 from socketio import AsyncRedisManager
 

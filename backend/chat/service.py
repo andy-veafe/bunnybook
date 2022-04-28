@@ -6,7 +6,7 @@ from uuid import UUID
 
 import socketio
 from fastapi.encoders import jsonable_encoder
-from injector import singleton, inject
+from common.injector import singleton, inject
 
 from auth.models import User
 from chat.models import ChatMessage, Conversation, PrivateChat

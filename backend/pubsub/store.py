@@ -2,7 +2,7 @@ import datetime as dt
 from typing import Union, List
 from uuid import UUID
 
-from injector import singleton, inject
+from common.injector import singleton, inject
 
 from common.injection import PubSubStore
 from common.schemas import dt_to_iso8601z

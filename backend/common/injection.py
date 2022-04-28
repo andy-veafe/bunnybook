@@ -1,7 +1,7 @@
 from typing import TypeVar, Type, Callable
 
 from aioredis import Redis
-from injector import Injector, singleton
+from common.injector import Injector, singleton
 
 from common.redis import RedisManager
 from config import cfg

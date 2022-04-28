@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from injector import singleton, inject
+from common.injector import singleton, inject
 
 from comment.repo import CommentRepo
 from notification.manager import NewNotification, NotificationManager

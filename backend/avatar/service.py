@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, List
 
 from PIL import Image
-from injector import singleton, inject
+from common.injector import singleton, inject
 
 from common.concurrency import run_in_executor
 from config import cfg

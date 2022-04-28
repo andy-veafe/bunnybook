@@ -5,7 +5,7 @@ from uuid import UUID
 
 import bcrypt
 import jwt
-from injector import singleton, inject
+from common.injector import singleton, inject
 
 from auth.exceptions import (
     LoginFailed,

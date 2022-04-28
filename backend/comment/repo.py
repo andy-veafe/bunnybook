@@ -2,7 +2,7 @@ import datetime as dt
 from typing import List, Set, Optional
 from uuid import UUID
 
-from injector import inject, singleton
+from common.injector import inject, singleton
 from sqlalchemy import insert, select, desc
 
 from auth.models import profile

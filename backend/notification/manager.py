@@ -4,7 +4,7 @@ from typing import List, Dict, Union, Set
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
-from injector import singleton, inject
+from common.injector import singleton, inject
 
 from auth.models import User
 from common.log import logger

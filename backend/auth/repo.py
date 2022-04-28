@@ -3,7 +3,7 @@ from uuid import UUID
 
 import bcrypt
 from asyncpg import UniqueViolationError
-from injector import singleton, inject
+from common.injector import singleton, inject
 from sqlalchemy import insert, select, update
 
 from auth.exceptions import EmailAlreadyTaken, UsernameAlreadyTaken

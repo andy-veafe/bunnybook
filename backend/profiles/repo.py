@@ -1,7 +1,7 @@
 from typing import List, Optional, Literal
 from uuid import UUID
 
-from injector import singleton, inject
+from common.injector import singleton, inject
 from sqlalchemy import select, desc, literal
 
 from auth.models import profile

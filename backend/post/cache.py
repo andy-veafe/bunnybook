@@ -4,7 +4,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
-from injector import singleton, inject
+from common.injector import singleton, inject
 
 from common.cache import fail_silently, hash_cache_key
 from common.injection import Cache

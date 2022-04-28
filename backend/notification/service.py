@@ -2,7 +2,7 @@ import datetime as dt
 from typing import Optional, List
 from uuid import UUID
 
-from injector import singleton, inject
+from common.injector import singleton, inject
 
 from notification.models import Notification
 from notification.repo import NotificationRepo

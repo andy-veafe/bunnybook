@@ -1,7 +1,7 @@
 from typing import List, Literal, Optional
 from uuid import UUID
 
-from injector import singleton, inject
+from common.injector import singleton, inject
 
 from chat.schemas import PrivateChatRead
 from profiles.exceptions import UnexpectedRelationshipState

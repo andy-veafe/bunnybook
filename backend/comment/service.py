@@ -2,7 +2,7 @@ import datetime as dt
 from typing import Optional, List
 from uuid import UUID
 
-from injector import singleton, inject
+from common.injector import singleton, inject
 
 from comment.models import Comment
 from comment.repo import CommentRepo

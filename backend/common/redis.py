@@ -2,7 +2,7 @@ from typing import Optional
 
 import aioredis
 from aioredis import Redis
-from injector import singleton, inject
+from common.injector import singleton, inject
 
 
 @singleton

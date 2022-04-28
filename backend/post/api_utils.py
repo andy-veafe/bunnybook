@@ -2,7 +2,7 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import HTTPException
-from injector import inject, singleton
+from common.injector import inject, singleton
 from starlette import status
 
 from auth.models import User
