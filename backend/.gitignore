@@ -5,3 +5,5 @@ test__*.py
 poetry.lock
 temp/
 test.py
+.ipynb_checkpoints
+*.ipynb

@@ -76,6 +76,8 @@ V = TypeVar("V")
 
 
 def private(something: T) -> T:
+    """将任何对象标记为私有，仅在本库内部使用"""
+
     something.__private__ = True  # type: ignore
     return something
 
@@ -107,7 +109,7 @@ if HAVE_ANNOTATED:
     """An experimental way to declare injectable dependencies utilizing a `PEP 593`_ implementation
     in Python 3.9 and backported to Python 3.7+ in `typing_extensions`.
 
-    Those two declarations are equivalent::
+    两种等价的声明方式：
 
         @inject
         def fun(t: SomeType) -> None:
@@ -115,9 +117,9 @@ if HAVE_ANNOTATED:
 
         def fun(t: Inject[SomeType]) -> None:
             pass
-
-    The advantage over using :func:`inject` is that if you have some noninjectable parameters
-    it may be easier to spot what are they. Those two are equivalent::
+    
+    在使用函数@inject装饰的情况下，如有有无需注入的参数时，可以使用@noninjectable装饰，并指定参数名称。
+    这种方式更容易让人识别和理解。以下两种方式等价：
 
         @inject
         @noninjectable('s')
@@ -127,17 +129,17 @@ if HAVE_ANNOTATED:
         def fun(t: Inject[SomeType], s: SomeOtherType) -> None:
             pass
 
-    .. seealso::
+    更多：
 
-        Function :func:`get_bindings`
-            A way to inspect how various injection declarations interact with each other.
+        函数`get_bindings`
+            
+            在上面提及的各种注入参数的方式，如@inject、@noninjectable、Inject、NoInject等，可以
+            使用`get_bindings`函数获取相应的注入参数。
 
-    .. versionadded:: 0.18.0
-    .. note:: Requires Python 3.7+.
-    .. note::
+    注意： 需要Python的版本为：3.7+.
+    注意：
 
-        If you're using mypy you need the version 0.750 or newer to fully type-check code using this
-        construct.
+        如果使用mypy，需要版本为0.750或更高版本，才支持完整的类型检查。
 
     .. _PEP 593: https://www.python.org/dev/peps/pep-0593/
     .. _typing_extensions: https://pypi.org/project/typing-extensions/
@@ -153,7 +155,7 @@ if HAVE_ANNOTATED:
 
     * You need to repeat the parameter name
     * The declaration may be relatively distance in space from the actual parameter declaration, thus
-      hindering readability
+       hindering readability
 
     `NoInject` solves both of those concerns, for example (those two declarations are equivalent)::
 
@@ -186,6 +188,7 @@ if HAVE_ANNOTATED:
 def reraise(
     original: Exception, exception: Exception, maximum_frames: int = 1
 ) -> NoReturn:
+    """重新抛出异常"""
     prev_cls, prev, tb = sys.exc_info()
     frames = inspect.getinnerframes(cast(types.TracebackType, tb))
     if len(frames) > maximum_frames:
@@ -237,19 +240,19 @@ class CallError(Error):
 
 
 class CircularDependency(Error):
-    """Circular dependency detected."""
+    """循环依赖"""
 
 
 class UnknownProvider(Error):
-    """Tried to bind to a type whose provider couldn't be determined."""
+    """在尝试绑定的时候，无法推测出类型的提供者"""
 
 
 class UnknownArgument(Error):
-    """Tried to mark an unknown argument as noninjectable."""
+    """抛出要将未知参数标记为无需注入的异常"""
 
 
 class Provider(Generic[T]):
-    """Provides class instances."""
+    """提供者"""
 
     __metaclass__ = ABCMeta
 
@@ -387,10 +390,9 @@ _InstallableModuleType = Union[Callable[["Binder"], None], "Module", Type["Modul
 
 
 class Binder:
-    """Bind interfaces to implementations.
+    """绑定接口的实现
 
-    .. note:: This class is instantiated internally for you and there's no need
-        to instantiate it on your own.
+    该类在Injector中已创建，无需自行实例化，并且每个Injector都有一个单独的Binder实例。
     """
 
     _bindings: Dict[type, Binding]
@@ -399,7 +401,7 @@ class Binder:
     def __init__(
         self, injector: "Injector", auto_bind: bool = True, parent: "Binder" = None
     ) -> None:
-        """Create a new Binder.
+        """创建一个新绑定
 
         :param injector: Injector we are binding for.
         :param auto_bind: Whether to automatically bind missing types.
@@ -452,7 +454,7 @@ class Binder:
 
         :param interface: Type to bind.
         :param to: Instance or class to bind to, or an instance of
-             :class:`Provider` subclass.
+            :class:`Provider` subclass.
         :param scope: Optional :class:`Scope` in which to bind.
         """
         if _get_origin(_punch_through_alias(interface)) in {dict, list}:
@@ -532,9 +534,7 @@ class Binder:
 
         In this context the module is one of the following:
 
-        * function taking the :class:`Binder` as it's only parameter
-
-          ::
+        * `Binder`类型的参数作为函数的唯一参数
 
             def configure(binder):
                 bind(str, to='s')
@@ -542,8 +542,7 @@ class Binder:
             binder.install(configure)
 
         * instance of :class:`Module` (instance of it's subclass counts)
-
-          ::
+        * 类型`Module`的实例
 
             class MyModule(Module):
                 def configure(self, binder):
@@ -551,10 +550,7 @@ class Binder:
 
             binder.install(MyModule())
 
-        * subclass of :class:`Module` - the subclass needs to be instantiable so if it
-          expects any parameters they need to be injected
-
-          ::
+        * 类型`Module`的子类 - 如果子类期望一些注入的参数，子类需要实例化才能使用
 
             binder.install(MyModule)
         """
@@ -731,10 +727,9 @@ def _get_origin(type_: type) -> Optional[type]:
 
 
 class Scope:
-    """A Scope looks up the Provider for a binding.
+    """在提供者中查找绑定的范围类。
 
-    By default (ie. :class:`NoScope` ) this simply returns the default
-    :class:`Provider` .
+    默认情况下，没有范围(NoScope)。
     """
 
     __metaclass__ = ABCMeta
@@ -744,7 +739,7 @@ class Scope:
         self.configure()
 
     def configure(self) -> None:
-        """Configure the scope."""
+        """提供范围的配置。"""
 
     @abstractmethod
     def get(self, key: Type[T], provider: Provider[T]) -> Provider[T]:
@@ -902,13 +897,12 @@ class Injector:
         auto_bind: bool = True,
         parent: "Injector" = None,
     ) -> None:
-        # Stack of keys currently being injected. Used to detect circular
-        # dependencies.
+        # 使用栈记录当前注入的键。用于检测循环依赖。
         self._stack = ()
 
         self.parent = parent
 
-        # Binder
+        # 绑定Binder
         self.binder = Binder(
             self,
             auto_bind=auto_bind,
@@ -922,11 +916,11 @@ class Injector:
         # This line is needed to pelase mypy. We know we have Iteable of modules here.
         modules = cast(Iterable[_InstallableModuleType], modules)
 
-        # Bind some useful types
+        # 绑定一些有用类型
         self.binder.bind(Injector, to=self)
         self.binder.bind(Binder, to=self.binder)
 
-        # Initialise modules
+        # 初始化模块Module
         for module in modules:
             self.binder.install(module)
 
@@ -1187,7 +1181,7 @@ def get_bindings(callable: Callable) -> Dict[str, type]:
         ...
         >>> get_bindings(function7)
         {}
-    
+
     该函数仅在内部调用，但是可以用来理解Injector为可调用对象提供了什么
     """
     look_for_explicit_bindings = False
@@ -1226,14 +1220,15 @@ class _BindingNotYetAvailable(Exception):
 def _infer_injected_bindings(
     callable: Callable, only_explicit_bindings: bool
 ) -> Dict[str, type]:
+    """推断注入绑定，返回一个字典。"""
+
     spec = inspect.getfullargspec(callable)
     try:
         bindings = get_type_hints(callable, include_extras=True)
     except NameError as e:
         raise _BindingNotYetAvailable(e)
 
-    # We don't care about the return value annotation as it doesn't matter
-    # injection-wise.
+    # 将return注解从bindings中删除，该值与依赖注入无关。
     bindings.pop("return", None)
 
     # If we're dealing with a bound method get_type_hints will still return `self` annotation even though
@@ -1353,11 +1348,13 @@ ConstructorOrClassT = TypeVar("ConstructorOrClassT", bound=Union[Callable, Type]
 
 @overload
 def inject(constructor_or_class: CallableT) -> CallableT:  # pragma: no cover
+    """@inject装饰函数"""
     pass
 
 
 @overload
 def inject(constructor_or_class: Type[T]) -> Type[T]:  # pragma: no cover
+    """@inject装饰类或者构造函数"""
     pass
 
 
@@ -1376,42 +1373,41 @@ def inject(constructor_or_class: ConstructorOrClassT) -> ConstructorOrClassT:
     ...     binder.bind(int, to=123)
     ...     binder.bind(str, to='Bob')
 
-    Use the Injector to get a new instance of A:
+    使用Injector获取A的新实例：
 
     >>> a = Injector(configure).get(A)
     [123, 'Bob']
 
-    As a convenience one can decorate a class itself::
+    更方便的方式可以直接装饰类：
 
         @inject
         class B:
             def __init__(self, dependency: Dependency):
                 self.dependency = dependency
 
-    This is equivalent to decorating its constructor. In particular this provides integration with
-    `dataclasses <https://docs.python.org/3/library/dataclasses.html>`_ (the order of decorator
-    application is important here)::
+    这种方式等价于装饰构造函数。同时还集成了与
+    `dataclasses <https://docs.python.org/3/library/dataclasses.html>`
+    (装饰器的调用顺序非常重要，必须先@inject后@dataclass)::
 
         @inject
         @dataclass
         class C:
             dependency: Dependency
 
-    .. note::
+    注意：
 
-        This decorator is to be used on class constructors (or, as a convenience, on classes).
-        Using it on non-constructor methods worked in the past but it was an implementation
-        detail rather than a design decision.
+        该装饰器用在构造函数上（或者，为了方便，用在类上）
+        在之前的版本可以在非构造函数上使用，但这样的话，只是实现细节，而不是一个设计决策。
 
-        Third party libraries may, however, provide support for injecting dependencies
-        into non-constructor methods or free functions in one form or another.
+        然而，第三方库提供了使用了使用在非构造函数上的注入依赖或者其他更自由的方式。
 
-    .. seealso::
+    更多：
 
         Generic type :data:`Inject`
-            A more explicit way to declare parameters as injectable.
+            一种明确的方式，声明参数可以被注入。
 
         Function :func:`get_bindings`
+
             A way to inspect how various injection declarations interact with each other.
 
     .. versionchanged:: 0.16.2
@@ -1433,12 +1429,11 @@ def inject(constructor_or_class: ConstructorOrClassT) -> ConstructorOrClassT:
 
 
 def noninjectable(*args: str) -> Callable[[CallableT], CallableT]:
-    """Mark some parameters as not injectable.
+    """标注函数的参数为不可注入的。
 
-    This serves as documentation for people reading the code and will prevent
-    Injector from ever attempting to provide the parameters.
+    主要是为了方便人们阅读使用，同时阻止参数注入为函数依赖。
 
-    For example:
+    示例：
 
     >>> class Service:
     ...    pass
@@ -1450,12 +1445,9 @@ def noninjectable(*args: str) -> Callable[[CallableT], CallableT]:
     ...         # ...
     ...         pass
 
-    :func:`noninjectable` decorations can be stacked on top of
-    each other and the order in which a function is decorated with
-    :func:`inject` and :func:`noninjectable`
-    doesn't matter.
+    函数@`noninjectable`用指定函数的装饰器的最顶部，并且顺序为@inject和@noninjectable
 
-    .. seealso::
+    更多：
 
         Generic type :data:`NoInject`
             A nicer way to declare parameters as noninjectable.
@@ -1483,6 +1475,8 @@ def noninjectable(*args: str) -> Callable[[CallableT], CallableT]:
 
 @private
 def read_and_store_bindings(f: Callable, bindings: Dict[str, type]) -> None:
+    """读取并存储函数的绑定信息。"""
+
     function_bindings = getattr(f, "__bindings__", None) or {}
     if function_bindings == "deferred":
         function_bindings = {}
@@ -1521,6 +1515,8 @@ class BoundKey(tuple):
 
 
 class AssistedBuilder(Generic[T]):
+    """指定类型的实例创建助手。"""
+
     def __init__(self, injector: Injector, target: Type[T]) -> None:
         self._injector = injector
         self._target = target
@@ -1557,7 +1553,7 @@ def _describe(c: Any) -> str:
 
 
 class ProviderOf(Generic[T]):
-    """Can be used to get a provider of an interface, for example:
+    """返回指定类型的提供者，示例：
 
     >>> def provide_int():
     ...     print('providing')
@@ -1582,7 +1578,7 @@ class ProviderOf(Generic[T]):
         return "%s(%r, %r)" % (type(self).__name__, self._injector, self._interface)
 
     def get(self) -> T:
-        """Get an implementation for the specified interface."""
+        """返回指定类型的实例"""
         return self._injector.get(self._interface)
 
 
