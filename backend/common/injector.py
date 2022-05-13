@@ -810,6 +810,7 @@ class SingletonScope(Scope):
             return provider
 
 
+# 单例范围的装饰器
 singleton = ScopeDecorator(SingletonScope)
 
 
